@@ -150,10 +150,7 @@ static MouseShortcut mshortcuts[] = {
 
 static Shortcut shortcuts[] = {
 	/* mask                 keysym          function        argument   altscreenmode*/
-  { XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0},  1 },
-	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0},  1 },
-	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0},  1 },
-	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0},  1 },
+	{ XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0},  1 },
 	{ TERMMOD|MODKEY,       XK_plus,        zoom,           {.f = +1},  1 },
 	{ ControlMask|MODKEY,   XK_minus,       zoom,           {.f = -1},  1 },
 	{ ControlMask|MODKEY,   XK_0,           zoomreset,      {.f =  0},  1 },

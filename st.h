@@ -118,7 +118,7 @@ extern char *utmp;
 extern char *scroll;
 extern char *stty_args;
 extern char *vtiden;
-extern wchar_t *worddelimiters;
+extern wchar_t *extrawordchars;
 extern int allowaltscreen;
 extern int allowwindowops;
 extern char *termname;

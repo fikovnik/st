@@ -1,0 +1,7 @@
+.ccls-cache/
+*.o
+st
+
+/.gdb_history
+/compile_commands.json
+/config.h

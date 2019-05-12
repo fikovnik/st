@@ -145,18 +145,18 @@ static MouseShortcut mshortcuts[] = {
 #define TERMMOD (ControlMask|ShiftMask)
 
 static Shortcut shortcuts[] = {
-	/* mask                 keysym          function        argument */
-	{ XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0} },
-	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
-	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
-	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	{ TERMMOD,              XK_plus,        zoom,           {.f = +1} },
-	{ ControlMask,          XK_minus,       zoom,           {.f = -1} },
-	{ ControlMask,          XK_0,           zoomreset,      {.f =  0} },
-	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0} },
-	{ TERMMOD,              XK_V,           clippaste,      {.i =  0} },
-	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
-	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
+	/* mask                 keysym          function        argument   altscreenmode*/
+  { XK_ANY_MOD,           XK_Break,       sendbreak,      {.i =  0},  1 },
+	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0},  1 },
+	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0},  1 },
+	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0},  1 },
+	{ TERMMOD,              XK_plus,        zoom,           {.f = +1},  1 },
+	{ ControlMask,          XK_minus,       zoom,           {.f = -1},  1 },
+	{ ControlMask,          XK_0,           zoomreset,      {.f =  0},  1 },
+	{ TERMMOD,              XK_C,           clipcopy,       {.i =  0},  0 },
+	{ TERMMOD,              XK_V,           clippaste,      {.i =  0},  1 },
+	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0},  0 },
+	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0},  1 },
 };
 
 /*

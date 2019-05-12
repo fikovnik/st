@@ -2603,3 +2603,9 @@ redraw(void)
 	tfulldirt();
 	draw();
 }
+
+int
+isaltscreenon(void)
+{
+  return term.mode & MODE_ALTSCREEN;
+}

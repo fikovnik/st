@@ -54,6 +54,8 @@
 {XK_m, ControlMask | Mod1Mask, "\x1B[109;7u", 0, 0},
 {XK_i, ControlMask, "\x1B[105;5u", 0, 0},
 {XK_i, ControlMask | Mod1Mask, "\x1B[105;7u", 0, 0},
+{XK_O, ControlMask | ShiftMask, "\x1B[79;6u", 0, 0},
+{XK_O, ControlMask | Mod1Mask | ShiftMask, "\x1B[79;8u", 0, 0},
 {XK_BackSpace, ControlMask, "\x1B[127;5u", 0, 0},
 {XK_BackSpace, ControlMask | Mod1Mask, "\x1B[127;7u", 0, 0},
 {XK_BackSpace, ControlMask | ShiftMask, "\x1B[127;6u", 0, 0},

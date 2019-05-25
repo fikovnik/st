@@ -50,6 +50,8 @@
 {XK_M, ControlMask | Mod1Mask | ShiftMask, "\x1B[77;8u", 0, 0},
 {XK_J, ControlMask | ShiftMask, "\x1B[74;6u", 0, 0},
 {XK_J, ControlMask | Mod1Mask | ShiftMask, "\x1B[74;8u", 0, 0},
+{XK_K, ControlMask | ShiftMask, "\x1B[75;6u", 0, 0},
+{XK_K, ControlMask | Mod1Mask | ShiftMask, "\x1B[75;8u", 0, 0},
 {XK_m, ControlMask, "\x1B[109;5u", 0, 0},
 {XK_m, ControlMask | Mod1Mask, "\x1B[109;7u", 0, 0},
 {XK_i, ControlMask, "\x1B[105;5u", 0, 0},

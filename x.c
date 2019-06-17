@@ -1380,6 +1380,274 @@ xopen()
 	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
 }
 
+int
+xgetproperty(Window win, Atom type, char *name, unsigned long *size, unsigned char **properties) {
+  Atom property = XInternAtom(xw.dpy, name, False);
+  Atom ret_type;
+  int ret_format;
+  unsigned long ret_size;
+  unsigned long nitems;
+  unsigned char *value;
+
+  if (XGetWindowProperty(xw.dpy, win,
+                         property, 0, MAX_PROPERTY_VALUE_LEN / 4, False, type,
+                         &ret_type, &ret_format, &nitems, &ret_size, &value) != Success) {
+    fprintf(stderr, "Unable to query EWME caps\n");
+    return 0;
+  }
+
+  if (type != ret_type) {
+    fprintf(stderr, "Invalid type of %s property (expected: %ld, got: %ld)\n", name, type, ret_type);
+    XFree(value);
+    return 0;
+  }
+
+  if (size) {
+    *size = nitems;
+  }
+
+  if (properties) {
+    *properties = value;
+  }
+
+  return 1;
+}
+
+int
+isewmhsupported(char *feature)
+{
+  Atom *caps;
+  unsigned long size;
+
+  if (!xgetproperty(DefaultRootWindow(xw.dpy), XA_ATOM, NET_SUPPORTED, &size, (unsigned char **)&caps)) {
+    fprintf(stderr, "Unable to query for EWMH caps");
+    return 0;
+  }
+
+  Atom cap = XInternAtom(xw.dpy, feature, False);
+  int res = 0;
+  for (int i = 0L; i < size; i++) {
+    if (caps[i] == cap) {
+      res = 1;
+      break;
+    }
+  }
+
+  XFree(caps);
+
+  return res;
+}
+
+int
+findwindow(Window root, XClassHint class, Window *win)
+{
+  Window w;
+  Window *windows;
+  unsigned int size;
+
+  if (!XQueryTree(xw.dpy, root, &w, &w, &windows, &size)) {
+    fprintf(stderr, "Unable to list windows\n");
+    return 0;
+  } else {
+    int res = 0;
+    for (int i=0; res == 0 && i < size; i++) {
+      XClassHint w_class;
+
+      if (XGetClassHint(xw.dpy, windows[i], &w_class)) {
+        if (!strcmp(w_class.res_class, class.res_class) &&
+            !strcmp(w_class.res_name, class.res_name)) {
+
+          XFree(w_class.res_class);
+          XFree(w_class.res_name);
+
+          *win = windows[i];
+          res = 1;
+        }
+      } else {
+        res = findwindow(windows[i], class, win);
+      }
+    }
+
+    XFree(windows);
+    return res;
+  }
+}
+
+int
+xsendevent(Window win, char *msg, unsigned long data0, unsigned long data1, unsigned long data2, unsigned long data3)
+{
+  XEvent event;
+  XWindowAttributes attrs;
+
+  memset(&event, 0, sizeof(event));
+  event.type = ClientMessage;
+  event.xclient.display = xw.dpy;
+  event.xclient.window = win;
+  event.xclient.message_type = XInternAtom(xw.dpy, msg, False);
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = data0;
+  event.xclient.data.l[1] = data1;
+  event.xclient.data.l[2] = data2;
+  event.xclient.data.l[3] = data3;
+
+  long mask = SubstructureNotifyMask | SubstructureRedirectMask;
+
+  XGetWindowAttributes(xw.dpy, win, &attrs);
+  int res = XSendEvent(xw.dpy, attrs.screen->root, False, mask, &event);
+
+  if (!res) {
+    fprintf(stderr, "Cannot send %s event\n", msg);
+    return 0;
+  }
+
+  XFlush(xw.dpy);
+
+  return 1;
+}
+
+int
+movewintothisdesktop(Window win)
+{
+  if (!isewmhsupported(NET_WM_DESKTOP)) {
+    fprintf(stderr, "WM does not support %s\n", NET_WM_DESKTOP);
+    return 0;
+  }
+
+  if (!isewmhsupported(NET_CURRENT_DESKTOP)) {
+    fprintf(stderr, "WM does not support %s\n", NET_CURRENT_DESKTOP);
+    return 0;
+  }
+
+  unsigned char *ret;
+
+  if (!xgetproperty(win, XA_CARDINAL, NET_WM_DESKTOP, NULL, &ret)) {
+    fprintf(stderr, "Unable to get %s from window %ld\n", NET_WM_DESKTOP, win);
+    return 0;
+  }
+
+  long win_desktop = *((long *)ret);
+  XFree(ret);
+
+  if (!xgetproperty(DefaultRootWindow(xw.dpy), XA_CARDINAL, NET_CURRENT_DESKTOP, NULL, &ret)) {
+    fprintf(stderr, "Unable to get %s from window %ld\n", NET_CURRENT_DESKTOP, DefaultRootWindow(xw.dpy));
+    return 0;
+  }
+
+  long cur_desktop = *((long *)ret);
+  XFree(ret);
+
+  if (win_desktop != cur_desktop) {
+    if (!xsendevent(win, NET_WM_DESKTOP, cur_desktop, CurrentTime, 0, 0)) {
+      fprintf(stderr, "Unable to set %s on %ld to %ld\n", NET_WM_DESKTOP, win, cur_desktop);
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+int
+iswinactive(Window win, int *active)
+{
+  Window *activewin;
+
+  if (!isewmhsupported(NET_ACTIVE_WINDOW)) {
+    fprintf(stderr, "WM does not support %s\n", NET_ACTIVE_WINDOW);
+    return 0;
+  }
+
+  if (!xgetproperty(DefaultRootWindow(xw.dpy), XA_WINDOW, NET_ACTIVE_WINDOW, NULL, (unsigned char **)&activewin)) {
+    fprintf(stderr, "Unable to get %s\n", NET_ACTIVE_WINDOW);
+    return 0;
+  }
+
+  *active = win == *activewin ? 1 : 0;
+
+  XFree(activewin);
+
+  return 1;
+}
+
+int
+activatewin(Window win)
+{
+  XWindowAttributes attrs;
+
+  if (!XGetWindowAttributes(xw.dpy, win, &attrs)) {
+    fprintf(stderr, "Unable to get attributes of %ld\n", win);
+    return 0;
+  }
+
+  if (attrs.map_state == IsUnmapped) {
+    if (!XMapWindow(xw.dpy, win)) {
+      fprintf(stderr, "Unable to map window %ld\n", win);
+      return 0;
+    }
+
+    XFlush(xw.dpy);
+  }
+
+  if (!movewintothisdesktop(win)) {
+    fprintf(stderr, "Unable to move the window to the current desktop\n");
+  }
+
+  return xsendevent(win, NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0);
+}
+
+int
+hidewin(Window win)
+{
+  if (!XUnmapWindow(xw.dpy, win)) {
+    fprintf(stderr, "Unable to unmap window %ld\n", win);
+    return 0;
+  }
+  XFlush(xw.dpy);
+  return 1;
+}
+
+int
+dropdownwin()
+{
+  XClassHint class = xgetclasshints();
+  Window win;
+
+  if (!findwindow(DefaultRootWindow(xw.dpy), class, &win)) {
+    printf("No existing `%s' window with name: `%s' and class: `%s' found, creating a new one\n",
+           termname, class.res_name, class.res_class);
+    return 0;
+  }
+
+  int active = 0;
+  if (!iswinactive(win, &active)) {
+    fprintf(stderr, "Unable to find out if %ld is active\n", win);
+    return 0;
+  }
+
+  if (active) {
+    if (!hidewin(win)) {
+      fprintf(stderr, "Unable to hide window %ld\n", win);
+      // this means that the window stayed active so we do not want to create a new one
+      return 1;
+    }
+  } else {
+    if (!activatewin(win)) {
+      fprintf(stderr, "Unable to activate window %ld\n", win);
+      return 0;
+    }
+  }
+
+  return 1;
+}
+
+void
+xopen()
+{
+	if (!(xw.dpy = XOpenDisplay(NULL)))
+		die("can't open display\n");
+	xw.scr = XDefaultScreen(xw.dpy);
+	xw.vis = XDefaultVisual(xw.dpy, xw.scr);
+}
+
 void
 xinit(int cols, int rows)
 {

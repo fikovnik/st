@@ -60,6 +60,7 @@
 {XK_O, ControlMask | Mod1Mask | ShiftMask, "\x1B[79;8u", 0, 0},
 {XK_BackSpace, ControlMask, "\x1B[127;5u", 0, 0},
 {XK_BackSpace, ControlMask | Mod1Mask, "\x1B[127;7u", 0, 0},
+{XK_BackSpace, Mod1Mask | ShiftMask, "\x1B[127;4u", 0, 0},
 {XK_BackSpace, ControlMask | ShiftMask, "\x1B[127;6u", 0, 0},
 {XK_BackSpace, ControlMask | Mod1Mask | ShiftMask, "\x1B[127;8u", 0, 0},
 {XK_1, ControlMask, "\x1B[49;5u", 0, 0},

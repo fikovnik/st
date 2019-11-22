@@ -1,1 +1,1 @@
-colors-oceanicnext.h
+colors-nord.h

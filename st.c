@@ -1908,6 +1908,16 @@ strhandle(void)
 				}
 			}
 			return;
+    case 12:
+      if (narg < 2)
+        break;
+			p = strescseq.args[1];
+			if (xsetcolorname(256, p)) {
+				fprintf(stderr, "erresc: invalid color %s\n", p);
+			} else {
+				redraw();
+			}
+			return;
 		case 4: /* color set */
 			if (narg < 3)
 				break;

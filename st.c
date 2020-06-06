@@ -1944,9 +1944,9 @@ strhandle(void)
 	case 'P': /* DCS -- Device Control String */
 		/* https://gitlab.com/gnachman/iterm2/-/wikis/synchronized-updates-spec */
 		if (strstr(strescseq.buf, "=1s") == strescseq.buf)
-			tsync_begin();  /* BSU */
+			tsync_begin(), term.mode &= ~ESC_DCS;  /* BSU */
 		else if (strstr(strescseq.buf, "=2s") == strescseq.buf)
-			tsync_end();  /* ESU */
+			tsync_end(), term.mode &= ~ESC_DCS;  /* ESU */
 		return;
 	case '_': /* APC -- Application Program Command */
 	case '^': /* PM -- Privacy Message */

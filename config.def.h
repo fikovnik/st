@@ -93,7 +93,7 @@ char *termname = "st-24bits";
  */
 unsigned int tabspaces = 8;
 
-#include "colors.h"
+#include "my-colors.h"
 
 /*
  * Default shape of cursor

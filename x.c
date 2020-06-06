@@ -26,6 +26,7 @@ typedef struct {
 	KeySym keysym;
 	void (*func)(const Arg *);
 	const Arg arg;
+  int altscreenmode;
 } Shortcut;
 
 typedef struct {
@@ -1802,7 +1803,7 @@ kpress(XEvent *ev)
 		len = XLookupString(e, buf, sizeof buf, &ksym, NULL);
 	/* 1. shortcuts */
 	for (bp = shortcuts; bp < shortcuts + LEN(shortcuts); bp++) {
-		if (ksym == bp->keysym && match(bp->mod, e->state)) {
+		if (ksym == bp->keysym && match(bp->mod, e->state) && (!isaltscreenon() || bp->altscreenmode)) {
 			bp->func(&(bp->arg));
 			return;
 		}

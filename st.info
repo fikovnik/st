@@ -238,3 +238,17 @@ st-bs-256color| simpleterm with backspace as backspace and 256colors,
 	use=st-256color,
 	kbs=\010,
 	kdch1=\177,
+
+# Enables true color support in Emacs
+# From https://www.gnu.org/software/emacs/manual/html_node/efaq/Colors-on-a-TTY.html
+# Use colon separators.
+st-24bit| simpleterm with 24-bit direct color mode,
+	use=st-256color,
+	setb24=\E[48:2:%p1%{65536}%/%d:%p1%{256}%/%{255}%&%d:%p1%{255}%&%dm,
+	setf24=\E[38:2:%p1%{65536}%/%d:%p1%{256}%/%{255}%&%d:%p1%{255}%&%dm,
+
+# Use semicolon separators.
+st-24bits| simpleterm with 24-bit direct color mode,
+	use=st-256color,
+	setb24=\E[48;2;%p1%{65536}%/%d;%p1%{256}%/%{255}%&%d;%p1%{255}%&%dm,
+	setf24=\E[38;2;%p1%{65536}%/%d;%p1%{256}%/%{255}%&%d;%p1%{255}%&%dm,

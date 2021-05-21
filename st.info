@@ -181,6 +181,8 @@ st-mono| simpleterm monocolor,
 	tsl=\E]0;,
 	xenl,
 	vpa=\E[%i%p1%dd,
+# Kitty extensions
+  Su,
 # XTerm extensions
 	rmxx=\E[29m,
 	smxx=\E[9m,

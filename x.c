@@ -134,17 +134,26 @@ typedef struct {
 	FcPattern *pattern;
 } Font;
 
+typedef struct {
+  /* last drawn undercurl */
+  int waveline;
+  int wavestart;
+  int waveend;
+} DrawState;
+
 /* Drawing Context */
 typedef struct {
 	Color *col;
 	size_t collen;
 	Font font, bfont, ifont, ibfont;
 	GC gc;
+	DrawState state;
 } DC;
 
 static inline ushort sixd_to_16bit(int);
 static int xmakeglyphfontspecs(XftGlyphFontSpec *, const Glyph *, int, int, int);
 static void xdrawglyphfontspecs(const XftGlyphFontSpec *, Glyph, int, int, int);
+static void generatewave(int x, int y, int width, XPoint **points);
 static void xdrawglyph(Glyph, int, int);
 static void xclear(int, int, int, int);
 static int xgeommasktogravity(int);
@@ -1266,6 +1275,7 @@ xmakeglyphfontspecs(XftGlyphFontSpec *specs, const Glyph *glyphs, int len, int x
 		}
 
 		/* Lookup character index with default font. */
+		// TODO check the unicode rendering
 		glyphidx = XftCharIndex(xw.dpy, font->match, rune);
 		if (glyphidx) {
 			specs[numspecs].font = font->match;
@@ -1475,8 +1485,29 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 
 	/* Render underline and strikethrough. */
 	if (base.mode & ATTR_UNDERLINE) {
-		XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1,
-				width, 1);
+	  if (base.ustyle == 0) {
+		  XftDrawRect(xw.draw, fg, winx, winy + dc.font.ascent + 1,
+		    width, 1);
+		} else if (base.ustyle == 3) {
+		  XPoint *points;
+      generatewave(winx, winy + dc.font.ascent + 1, width, &points);
+
+	    XGCValues gcv = {
+			  .foreground = fg->pixel,
+			  .line_width = 1,
+			  .line_style = LineSolid,
+		  };
+
+		  GC gc = XCreateGC(xw.dpy, XftDrawDrawable(xw.draw),
+			    GCForeground | GCLineWidth | GCLineStyle,
+			    &gcv);
+
+      XDrawPoints(xw.dpy, XftDrawDrawable(xw.draw), gc,
+          points, width, CoordModeOrigin);
+
+      free(points);
+      XFreeGC(xw.dpy, gc);
+	  }
 	}
 
 	if (base.mode & ATTR_STRUCK) {
@@ -1486,6 +1517,34 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 
 	/* Reset clip to none. */
 	XftDrawSetClip(xw.draw, 0);
+}
+
+void
+generatewave(int x, int y, int width, XPoint **points)
+{
+  static int pattern[] = {0,1,2,2,1,0};
+  static int size = sizeof(pattern)/sizeof(int);
+
+  if (width > 0) {
+    XPoint *ps = xmalloc(sizeof(XPoint) * width);
+    *points = ps;
+    int offset = 0;
+
+    if (dc.state.waveline == y && dc.state.wavestart <= x && dc.state.waveend >= x) {
+      offset = (x - dc.state.wavestart) % size;
+    } else {
+      dc.state.wavestart = x;
+      dc.state.waveline = y;
+    }
+
+    for (int i=0; i<width; i++, offset++) {
+      *ps++ = (XPoint) { .x = x + i, .y = y + pattern[offset % size] };
+    }
+
+    dc.state.waveend = MAX(dc.state.waveend, x + width);
+  } else {
+    *points = NULL;
+  }
 }
 
 void

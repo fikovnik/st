@@ -1186,7 +1186,7 @@ csiparse(void)
 			v = -1;
 		csiescseq.arg[csiescseq.narg++] = v;
 		p = np;
-		if (*p != ';' || csiescseq.narg == ESC_ARG_SIZ)
+		if ((*p != ';' && *p != ':') || csiescseq.narg == ESC_ARG_SIZ)
 			break;
 		p++;
 	}
@@ -1387,6 +1387,7 @@ tsetattr(const int *attr, int l)
 {
 	int i;
 	int32_t idx;
+	int style;
 
 	for (i = 0; i < l; i++) {
 		switch (attr[i]) {
@@ -1414,6 +1415,7 @@ tsetattr(const int *attr, int l)
 			break;
 		case 4:
 			term.c.attr.mode |= ATTR_UNDERLINE;
+		  term.c.attr.ustyle = l == 1 ? 0 : attr[++i];
 			break;
 		case 5: /* slow blink */
 			/* FALLTHROUGH */

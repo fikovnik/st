@@ -65,6 +65,7 @@ typedef struct {
 	ushort mode;      /* attribute flags */
 	uint32_t fg;      /* foreground  */
 	uint32_t bg;      /* background  */
+	ushort ustyle;    /* underline style */
 } Glyph;
 
 typedef Glyph *Line;

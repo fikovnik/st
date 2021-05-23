@@ -1180,8 +1180,13 @@ csiparse(void)
 	while (p < csiescseq.buf+csiescseq.len) {
 		np = NULL;
 		v = strtol(p, &np, 10);
-		if (np == p)
+		if (np == p) {
+		  if (*p == ';' || *p == ':') {
+    		p++;
+		    continue;
+		  }
 			v = 0;
+		}
 		if (v == LONG_MAX || v == LONG_MIN)
 			v = -1;
 		csiescseq.arg[csiescseq.narg++] = v;
@@ -1465,6 +1470,13 @@ tsetattr(const int *attr, int l)
 			break;
 		case 49:
 			term.c.attr.bg = defaultbg;
+			break;
+		case 58:
+			if ((idx = tdefcolor(attr, &i, l)) >= 0)
+				term.c.attr.ufg = idx;
+			break;
+		case 59:
+			term.c.attr.ufg = term.c.attr.fg;
 			break;
 		default:
 			if (BETWEEN(attr[i], 30, 37)) {

@@ -12,7 +12,7 @@
 #define DEFAULT(a, b)		(a) = (a) ? (a) : (b)
 #define LIMIT(x, a, b)		(x) = (x) < (a) ? (a) : (x) > (b) ? (b) : (x)
 #define ATTRCMP(a, b)		((a).mode != (b).mode || (a).fg != (b).fg || \
-				(a).bg != (b).bg)
+				(a).bg != (b).bg || (a).ufg != (b).ufg)
 #define TIMEDIFF(t1, t2)	((t1.tv_sec-t2.tv_sec)*1000 + \
 				(t1.tv_nsec-t2.tv_nsec)/1E6)
 #define MODBIT(x, set, bit)	((set) ? ((x) |= (bit)) : ((x) &= ~(bit)))
@@ -66,6 +66,7 @@ typedef struct {
 	uint32_t fg;      /* foreground  */
 	uint32_t bg;      /* background  */
 	ushort ustyle;    /* underline style */
+	uint32_t ufg;     /* underline foreground  */
 } Glyph;
 
 typedef Glyph *Line;

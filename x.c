@@ -1369,8 +1369,8 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 	int charlen = len * ((base.mode & ATTR_WIDE) ? 2 : 1);
 	int winx = win.hborderpx + x * win.cw, winy = win.vborderpx + y * win.ch,
 	    width = charlen * win.cw;
-	Color *fg, *bg, *temp, revfg, revbg, truefg, truebg;
-	XRenderColor colfg, colbg;
+	Color *fg, *bg, *ufg, *temp, revfg, revbg, truefg, truebg, trueufg;
+	XRenderColor colfg, colbg, colufg;
 	XRectangle r;
 
 	/* Fallback on color display for attributes not supported by the font */
@@ -1492,8 +1492,19 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 		  XPoint *points;
       generatewave(winx, winy + dc.font.ascent + 1, width, &points);
 
+	    if (IS_TRUECOL(base.ufg)) {
+		    colufg.alpha = 0xffff;
+		    colufg.green = TRUEGREEN(base.ufg);
+		    colufg.red = TRUERED(base.ufg);
+		    colufg.blue = TRUEBLUE(base.ufg);
+		    XftColorAllocValue(xw.dpy, xw.vis, xw.cmap, &colufg, &trueufg);
+		    ufg = &trueufg;
+	    } else {
+		    ufg = &dc.col[base.ufg];
+	    }
+
 	    XGCValues gcv = {
-			  .foreground = fg->pixel,
+			  .foreground = ufg->pixel,
 			  .line_width = 1,
 			  .line_style = LineSolid,
 		  };

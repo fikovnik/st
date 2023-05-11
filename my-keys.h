@@ -62,6 +62,8 @@
 {XK_m, ControlMask | Mod1Mask, "\033[109;7u", 0, 0},
 {XK_j, ControlMask, "\033[106;5u", 0, 0},
 {XK_i, ControlMask, "\033[105;5u", 0, 0},
+{XK_i, Mod1Mask, "\033[105;3u", 0, 0},
+{XK_I, ShiftMask | Mod1Mask, "\033[105;4u", 0, 0},
 {XK_i, ControlMask | Mod1Mask, "\033[105;7u", 0, 0},
 {XK_O, ControlMask | ShiftMask, "\033[79;6u", 0, 0},
 {XK_O, ControlMask | Mod1Mask | ShiftMask, "\033[79;8u", 0, 0},
